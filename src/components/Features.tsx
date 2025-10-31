@@ -2,8 +2,11 @@ import { BookHeart, Bell, Image, Shield, LineChart, Users } from "lucide-react";
 import memoryJournalIcon from "@/assets/memory-journal-icon.png";
 import recallIcon from "@/assets/recall-icon.png";
 import emotionIcon from "@/assets/emotion-icon.png";
+import { useNavigate } from "react-router-dom";
+
 
 export const Features = () => {
+  
   const features = [
     {
       icon: memoryJournalIcon,
