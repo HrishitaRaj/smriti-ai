@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 
-type Message = { role: "user" | "assistant" | "system"; text: string };
+type Message = { role: "user" | "assistant" | "system"; text: string; emotion?: string };
 
 export type ChatbotHandle = {
   sendQuestion: (question: string) => Promise<void>;
-  addMemory: (text: string) => Promise<void>;
+  addMemory: (text: string, emotion?: string) => Promise<void>;
 };
 
 const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chatbot(props, ref) {
@@ -40,14 +40,18 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chat
         setLoading(false);
       }
     },
-    async addMemory(text: string) {
+    async addMemory(text: string, emotion?: string) {
       if (!text.trim()) return;
-      setMessages((m) => [...m, { role: "system", text: `Saved memory: ${text}` }]);
+      const display = emotion ? `${text} [feeling: ${emotion}]` : text;
+      // Add the user's saved memory as a user message (with optional emotion badge)
+      setMessages((prev) => [...prev, { role: "user", text, emotion } , { role: "system", text: `Saved memory: ${display}` }]);
       try {
+        const body: Record<string, any> = { text };
+        if (emotion) body.emotion = emotion;
         await fetch("http://localhost:8000/add-memory", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
+          body: JSON.stringify(body),
         });
       } catch (err) {
         setMessages((m) => [...m, { role: "assistant", text: `Error saving memory: ${err}` }]);
@@ -63,7 +67,12 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chat
         {messages.map((m, i) => (
           <div key={i} className={`py-1 px-2 rounded ${m.role === "user" ? "text-right" : "text-left"}`}>
             <div className={`inline-block rounded px-3 py-2 ${m.role === "user" ? "bg-sky-500 text-white" : m.role === "assistant" ? "bg-gray-100 text-gray-900" : "bg-green-100 text-gray-900"}`}>
-              {m.text}
+              <div>
+                <div>{m.text}</div>
+                {m.emotion && m.role === "user" && (
+                  <div className="mt-1 text-xs italic text-white/90">{`You felt ${m.emotion}`}</div>
+                )}
+              </div>
             </div>
           </div>
         ))}

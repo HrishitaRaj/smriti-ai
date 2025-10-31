@@ -8,6 +8,7 @@ import recall
 
 class MemoryIn(BaseModel):
     text: str
+    emotion: str | None = None
 
 
 class AskIn(BaseModel):
@@ -28,7 +29,8 @@ app.add_middleware(
 @app.post("/add-memory")
 def add_memory_endpoint(payload: MemoryIn):
     """Add a memory to the in-memory store (calls `recall.add_memory`)."""
-    recall.add_memory(payload.text)
+    # Pass emotion through when provided
+    recall.add_memory(payload.text, emotion=payload.emotion)
     return {"ok": True}
 
 

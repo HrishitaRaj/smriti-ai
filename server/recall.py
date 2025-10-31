@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 
@@ -25,6 +25,7 @@ embedding_model = SentenceTransformer("multi-qa-mpnet-base-dot-v1")
 
 # In-memory storage (replace later with DB or JSON)
 memory_texts = []
+memory_emotions = []  # parallel list to store optional emotion/tag for each memory
 memory_embeddings = np.zeros((0, 768), dtype="float32")
 index = None
 
@@ -32,12 +33,16 @@ index = None
 # ===========================
 # FUNCTIONS
 # ===========================
-def add_memory(text):
-    """Add a new memory and store its embedding in FAISS index."""
-    global index, memory_embeddings, memory_texts
+def add_memory(text, emotion: str | None = None):
+    """Add a new memory and store its embedding in FAISS index.
+
+    emotion is optional metadata attached to the memory (e.g. 'happy', 'sad').
+    """
+    global index, memory_embeddings, memory_texts, memory_emotions
 
     emb = embedding_model.encode([text], normalize_embeddings=True)
     memory_texts.append(text)
+    memory_emotions.append(emotion)
 
     if index is None:
         dim = emb.shape[1]
@@ -48,32 +53,64 @@ def add_memory(text):
         index.add(emb)
         memory_embeddings = np.vstack((memory_embeddings, emb))
 
-    print(f"✅ Memory added: {text}")
+    print(f"✅ Memory added: {text} (emotion={emotion})")
 
 
 def retrieve_memories(query, top_k=3):
     """Retrieve top-k relevant memories."""
     if not memory_texts:
         return []
-
     query_emb = embedding_model.encode([query], normalize_embeddings=True)
     distances, indices = index.search(np.array(query_emb).astype("float32"), top_k)
 
-    results = [memory_texts[i] for i in indices[0]]
+    # Return structured results including any recorded emotion for each memory
+    results = []
+    for i in indices[0]:
+        if i < len(memory_texts):
+            results.append({
+                "text": memory_texts[i],
+                "emotion": memory_emotions[i] if i < len(memory_emotions) else None,
+            })
     return results
 
 
 def ask_model(question, context):
-    """Send question + retrieved memories to Mistral-7B for reasoning."""
-    context_text = "\n".join([f"- {m}" for m in context])
-    prompt = f"""You are a helpful memory assistant for an Alzheimer patient.
-The following are stored memories of the user:
+    """Send question + retrieved memories to Mistral-7B for reasoning.
+
+    Context is a list of dicts with keys 'text' and optional 'emotion'.
+    We format the prompt so the model can reference both the memory and how the
+    user reported feeling about it, and instruct the model to reply gently.
+    """
+    # Build a gentle, emotion-aware context for the model.
+    ctx_lines = []
+    for m in context:
+        if isinstance(m, dict):
+            text = m.get("text", "")
+            emotion = m.get("emotion")
+            if emotion:
+                ctx_lines.append(f"- Memory: {text} (feeling: {emotion})")
+            else:
+                ctx_lines.append(f"- Memory: {text}")
+        else:
+            # Fallback if older format is passed
+            ctx_lines.append(f"- Memory: {str(m)}")
+
+    context_text = "\n".join(ctx_lines)
+
+    prompt = f"""You are a gentle, empathetic assistant helping a person with memory challenges.
+When you answer, do two things:
+1) Briefly refer to the relevant memory (quote or summarize).
+2) Kindly mention how the user reported feeling about that memory, if available (for example: "You felt happy about this").
+
+Use warm, reassuring language and keep responses concise and respectful.
+
+Here are the stored memories and any reported emotions:
 {context_text}
 
-Now, based on these memories, answer the question clearly and concisely.
-
 Question: {question}
-Answer:"""
+
+Answer gently, referencing relevant memories and the associated feelings where appropriate.
+"""
 
     if client is None:
         raise RuntimeError(

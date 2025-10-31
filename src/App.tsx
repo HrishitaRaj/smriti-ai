@@ -5,12 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
-import Visualgallery from "./pages/Visualgallery";
+import VisualGallery from "./pages/VisualGallery";
 import Activities from "./pages/Activities";
 import NotFound from "./pages/NotFound";
 import EmotionTracker from "./pages/EmotionTracker";
-import ImpactPage from "./pages/Impact";
-import ContactPage from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -23,10 +21,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/visualgallery" element={<Visualgallery />} />
+          <Route path="/visualgallery" element={<VisualGallery />} />
           <Route path="/activities" element={<Activities />} />
-          <Route path="/impact" element={<ImpactPage />} />
-          <Route path="/contact" element={<ContactPage />} />
           <Route path="/emotion-tracker" element={<EmotionTracker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

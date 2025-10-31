@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 const Chat = () => {
   const chatbotRef = useRef<ChatbotHandle | null>(null);
   const [input, setInput] = useState("");
+  const [pendingMemory, setPendingMemory] = useState<string | null>(null);
 
   const onSend = async () => {
     if (!input.trim()) return;
@@ -14,8 +15,15 @@ const Chat = () => {
 
   const onSave = async () => {
     if (!input.trim()) return;
-    await chatbotRef.current?.addMemory(input.trim());
+    // Hold the memory text and show emotion picker before saving
+    setPendingMemory(input.trim());
     setInput("");
+  };
+
+  const saveMemoryWithEmotion = async (emotion?: string) => {
+    if (!pendingMemory) return;
+    await chatbotRef.current?.addMemory(pendingMemory, emotion);
+    setPendingMemory(null);
   };
 
   return (
@@ -43,6 +51,21 @@ const Chat = () => {
 
           {/* Input area */}
           <div className="pt-3 border-t border-primary/10">
+            {/* Emotion picker shown after clicking Save */}
+            {pendingMemory && (
+              <div className="mb-3 p-3 bg-white/95 rounded-lg border border-primary/10">
+                <p className="font-medium">How are you feeling about this?</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {['Happy','Sad','Excited','Scared','Calm','Angry','Neutral'].map((emo) => (
+                    <button key={emo} onClick={() => saveMemoryWithEmotion(emo)} className="px-3 py-1 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition">
+                      {emo}
+                    </button>
+                  ))}
+                  <button onClick={() => saveMemoryWithEmotion(undefined)} className="ml-2 px-3 py-1 rounded-full bg-white border">Skip</button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <input
                 type="text"

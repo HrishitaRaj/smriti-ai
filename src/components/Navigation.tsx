@@ -112,7 +112,7 @@ export const Navigation = () => {
 
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link to="/contact" className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
+                    <Link to="/footer" className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
                       Contact
                     </Link>
                   </NavigationMenuLink>
