@@ -5,19 +5,10 @@ export const About = () => {
     <section className="py-20 bg-gradient-soft">
       <div className="container mx-auto px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold text-primary mb-6">
+          <h2 className="text-4xl lg:text-5xl font-bold text-primary mb-12">
             About Smriti
           </h2>
           
-          <p className="text-lg text-foreground/80 mb-12 leading-relaxed">
-            Smriti is an AI-powered memory and emotion companion that helps individuals 
-            with Alzheimer's and dementia preserve their memories, recognize emotions, 
-            and reconnect with their world through compassionate, human-like conversations. 
-            By merging advanced AI with empathy, Smriti doesn't just remind patients of 
-            moments—it helps them <span className="font-semibold text-secondary">feel</span>, 
-            <span className="font-semibold text-secondary"> reflect</span>, and 
-            <span className="font-semibold text-secondary"> rediscover</span> the meaning behind those memories.
-          </p>
 
           <div className="grid md:grid-cols-3 gap-8 mt-16">
             <div className="p-6 bg-card rounded-2xl shadow-card hover:shadow-soft transition-all duration-300 hover:-translate-y-2">

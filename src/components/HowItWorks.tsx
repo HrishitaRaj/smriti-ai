@@ -1,23 +1,20 @@
-import { Sparkles, Lightbulb, HeartHandshake } from "lucide-react";
+import { Camera, Lightbulb, Heart } from "lucide-react";
 
 export const HowItWorks = () => {
   const steps = [
     {
-      icon: Sparkles,
+      icon: Camera,
       title: "Capture",
-      emoji: "💭",
       description: "Share moments via voice or text. Smriti records daily experiences, tagging people, places, emotions, and time.",
     },
     {
       icon: Lightbulb,
       title: "Recall",
-      emoji: "💡",
       description: "When users forget, Smriti gently reminds them of people, events, and feelings through natural conversations.",
     },
     {
-      icon: HeartHandshake,
+      icon: Heart,
       title: "Reflect",
-      emoji: "🧠",
       description: "Track emotional health and share insights with caregivers for early intervention and personalized care.",
     },
   ];
@@ -50,8 +47,8 @@ export const HowItWorks = () => {
                 </div>
 
                 {/* Icon */}
-                <div className="w-20 h-20 bg-muted rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-5xl">{step.emoji}</span>
+                <div className="w-20 h-20 bg-gradient-primary rounded-2xl flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform duration-300">
+                  <step.icon className="w-10 h-10 text-white" />
                 </div>
 
                 {/* Content */}
