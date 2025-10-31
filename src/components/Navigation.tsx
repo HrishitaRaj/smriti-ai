@@ -42,16 +42,13 @@ export const Navigation = () => {
                   <NavigationMenuContent>
                     <ul className="grid w-[400px] gap-3 p-4 bg-background">
                       <li>
-                        <NavigationMenuLink
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
-                          onClick={() => navigate("/memory-journal")}
-                        >
-                          <div className="text-sm font-medium leading-none">
-                            Memory Journal
-                          </div>
-                          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                            Capture and preserve precious moments
-                          </p>
+                        <NavigationMenuLink asChild>
+                          <Link to="/memories" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Memory Journal</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Capture and preserve precious moments
+                            </p>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
 

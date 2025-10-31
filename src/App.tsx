@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Chat from "./pages/Chat";
 import VisualGallery from "./pages/VisualGallery";
 import Activities from "./pages/Activities";
+import Memories from "./pages/Memories";
 import NotFound from "./pages/NotFound";
 import EmotionTracker from "./pages/EmotionTracker";
 
@@ -96,6 +97,7 @@ const App = () => (
           {/* 404 Page */}
           <Route path="/chat" element={<Chat />} />
           <Route path="/visualgallery" element={<VisualGallery />} />
+          <Route path="/memories" element={<Memories />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/emotion-tracker" element={<EmotionTracker />} />
           <Route path="*" element={<NotFound />} />

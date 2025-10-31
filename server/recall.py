@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 
@@ -24,25 +24,57 @@ except Exception as _e:
 embedding_model = SentenceTransformer("multi-qa-mpnet-base-dot-v1")
 
 # In-memory storage (replace later with DB or JSON)
+# memory_entries stores objects {text: str, timestamp: ISO str}
+memory_entries = []
 memory_texts = []
 memory_emotions = []  # parallel list to store optional emotion/tag for each memory
 memory_embeddings = np.zeros((0, 768), dtype="float32")
 index = None
 
+# simple lock to prevent race-conditions when adding memories from concurrent requests
+from threading import Lock
+_add_memory_lock = Lock()
+
 
 # ===========================
 # FUNCTIONS
 # ===========================
-def add_memory(text, emotion: str | None = None):
-    """Add a new memory and store its embedding in FAISS index.
+def add_memory(text, emotion=None, timestamp=None):
+    """Add a new memory with optional emotion and timestamp, and store its embedding in FAISS index."""
+    global index, memory_embeddings, memory_texts, memory_entries, memory_emotions
 
-    emotion is optional metadata attached to the memory (e.g. 'happy', 'sad').
-    """
-    global index, memory_embeddings, memory_texts, memory_emotions
+    from datetime import datetime
 
+    # ensure timestamp exists
+    if timestamp is None:
+        timestamp = datetime.utcnow().isoformat()
+
+    # Use a lock to avoid race-conditions where two near-simultaneous requests
+    # check for existing text and both append, resulting in duplicates.
+    with _add_memory_lock:
+        # If an identical memory (by text) already exists, update its timestamp and emotion
+        # instead of appending a duplicate. This avoids duplicate timeline entries while
+        # keeping the FAISS index consistent (we don't remove/rebuild embeddings here).
+        normalized = text.strip().lower()
+        for i, existing in enumerate(memory_entries):
+            if isinstance(existing, dict) and existing.get("text", "").strip().lower() == normalized:
+                # update existing entry (prefer the provided emotion if present)
+                existing["timestamp"] = timestamp
+                if emotion is not None:
+                    existing["emotion"] = emotion
+                    memory_emotions[i] = emotion
+                memory_texts[i] = text
+                print(f"🔁 Updated existing memory timestamp for: {text}")
+                return
+
+        # Create structured entry
+        entry = {"text": text, "emotion": emotion, "timestamp": timestamp}
+        memory_entries.append(entry)
+        memory_texts.append(text)
+        memory_emotions.append(emotion)
+
+    # Compute and store embedding
     emb = embedding_model.encode([text], normalize_embeddings=True)
-    memory_texts.append(text)
-    memory_emotions.append(emotion)
 
     if index is None:
         dim = emb.shape[1]
@@ -53,7 +85,9 @@ def add_memory(text, emotion: str | None = None):
         index.add(emb)
         memory_embeddings = np.vstack((memory_embeddings, emb))
 
-    print(f"✅ Memory added: {text} (emotion={emotion})")
+    print(f"✅ Memory added: {text}")
+    print(f"   Emotion: {emotion if emotion else 'None'}")
+    print(f"   Timestamp: {timestamp}")
 
 
 def retrieve_memories(query, top_k=3):
@@ -72,6 +106,12 @@ def retrieve_memories(query, top_k=3):
                 "emotion": memory_emotions[i] if i < len(memory_emotions) else None,
             })
     return results
+
+
+def list_memories():
+    """Return stored memory entries in reverse chronological order (newest first)."""
+    # return a copy to avoid accidental mutation
+    return list(reversed(memory_entries))
 
 
 def ask_model(question, context):
