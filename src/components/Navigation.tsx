@@ -29,7 +29,7 @@ export const Navigation = () => {
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link to="/" className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
+                    <Link to={{ pathname: '/', hash: '#home' }} className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
                       Home
                     </Link>
                   </NavigationMenuLink>
@@ -123,7 +123,7 @@ export const Navigation = () => {
 
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link to="/impact" className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
+                    <Link to={{ pathname: '/', hash: '#benefits' }} className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
                       Benefits
                     </Link>
                   </NavigationMenuLink>
@@ -133,7 +133,7 @@ export const Navigation = () => {
 
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link to="/footer" className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
+                    <Link to={{ pathname: '/', hash: '#contact' }} className="px-4 py-2 text-foreground hover:text-primary transition-all duration-150 hover:-translate-y-1 hover:underline hover:underline-offset-4">
                       Contact
                     </Link>
                   </NavigationMenuLink>
