@@ -52,6 +52,18 @@ export const Navigation = () => {
                         </NavigationMenuLink>
                       </li>
                       <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/activities" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div>
+                              <div className="text-sm font-medium leading-none">Daily Activities</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                Step-by-step daily routines and timelines
+                              </p>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
                         <NavigationMenuLink href="#caregiver-dashboard" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
                           <div className="text-sm font-medium leading-none">Caregiver Dashboard</div>
                           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -67,6 +79,29 @@ export const Navigation = () => {
                           </p>
                         </NavigationMenuLink>
                       </li>
+                      <li>
+                        {/* Use react-router Link as child so navigation is SPA-friendly */}
+                        <NavigationMenuLink asChild>
+                          <Link to="/emotion-tracker" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div className="text-sm font-medium leading-none">Emotion Tracker</div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              Monitor emotional well-being
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/visualgallery" className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                            <div>
+                              <div className="text-sm font-medium leading-none">Visual Gallery</div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                Browse visual memories and photos
+                              </p>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
                     </ul>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
@@ -76,6 +111,8 @@ export const Navigation = () => {
                     Benefits
                   </NavigationMenuLink>
                 </NavigationMenuItem>
+
+                
 
                 <NavigationMenuItem>
                   <NavigationMenuLink href="#contact" className="px-4 py-2 text-foreground hover:text-primary transition-colors">

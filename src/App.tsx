@@ -5,7 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Chat from "./pages/Chat";
+import Visualgallery from "./pages/Visualgallery";
+import Activities from "./pages/Activities";
 import NotFound from "./pages/NotFound";
+import EmotionTracker from "./pages/EmotionTracker";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +21,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/chat" element={<Chat />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/visualgallery" element={<Visualgallery />} />
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/emotion-tracker" element={<EmotionTracker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

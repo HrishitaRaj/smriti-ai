@@ -2,3 +2,5 @@ sentence-transformers
 numpy
 openai
 faiss-cpu
+fastapi
+uvicorn
