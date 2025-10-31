@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Smriti Color Palette - Warm, Emotional, Compassionate */
+    --background: 285 100% 98%;  /* #fdf6ff - light purple background */
+    --foreground: 20 45% 26%;     /* #5e3023 - warm brown text */
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 45% 26%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 45% 26%;
+
+    --primary: 286 100% 50%;      /* #c800ff - vivid purple for main CTAs */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 285 100% 70%;    /* #de67ff - light lavender accents */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 285 50% 95%;
+    --muted-foreground: 20 25% 45%;
+
+    --accent: 285 100% 70%;       /* lavender for highlights */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 285 30% 90%;
+    --input: 285 30% 90%;
+    --ring: 286 100% 50%;
+
+    --radius: 1rem;  /* Rounded, flowing shapes */
+
+    /* Custom design tokens for Smriti */
+    --gradient-hero: linear-gradient(135deg, hsl(285, 100%, 98%) 0%, hsl(285, 80%, 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(286, 100%, 50%) 0%, hsl(285, 100%, 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(285, 100%, 98%) 0%, hsl(0, 0%, 100%) 100%);
+    
+    --shadow-soft: 0 8px 32px -8px hsl(286 100% 50% / 0.12);
+    --shadow-card: 0 4px 24px -4px hsl(286 100% 50% / 0.08);
+    --shadow-glow: 0 0 32px hsl(285 100% 70% / 0.3);
+    
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
