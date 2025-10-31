@@ -9,6 +9,7 @@ import Chat from "./pages/Chat";
 import VisualGallery from "./pages/VisualGallery";
 import Activities from "./pages/Activities";
 import Memories from "./pages/Memories";
+import Reminders from "./pages/Reminders";
 import NotFound from "./pages/NotFound";
 import EmotionTracker from "./pages/EmotionTracker";
 
@@ -98,6 +99,7 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/visualgallery" element={<VisualGallery />} />
           <Route path="/memories" element={<Memories />} />
+          <Route path="/reminders" element={<Reminders />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/emotion-tracker" element={<EmotionTracker />} />
           <Route path="*" element={<NotFound />} />
