@@ -9,6 +9,8 @@ import Visualgallery from "./pages/Visualgallery";
 import Activities from "./pages/Activities";
 import NotFound from "./pages/NotFound";
 import EmotionTracker from "./pages/EmotionTracker";
+import ImpactPage from "./pages/Impact";
+import ContactPage from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/chat" element={<Chat />} />
           <Route path="/visualgallery" element={<Visualgallery />} />
           <Route path="/activities" element={<Activities />} />
+          <Route path="/impact" element={<ImpactPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/emotion-tracker" element={<EmotionTracker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

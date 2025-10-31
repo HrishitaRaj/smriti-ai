@@ -5,7 +5,7 @@ import { DotGrid } from "@/components/ui/dot-grid";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero">
       {/* Dot Grid Background */}
       <DotGrid dotSize={2} gap={40} baseColor="#c800ff" />
 

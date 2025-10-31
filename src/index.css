@@ -61,3 +61,8 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Smooth scrolling for anchor links (navbar) */
+html {
+  scroll-behavior: smooth;
+}

@@ -4,7 +4,7 @@ import { Heart, Mail, MapPin, Phone } from "lucide-react";
 
 export const Footer = () => {
   return (
-    <footer className="bg-background border-t border-border/50">
+    <footer id="contact" className="bg-background border-t border-border/50">
       {/* CTA Section */}
       <div className="bg-gradient-primary py-16 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
