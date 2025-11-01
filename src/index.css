@@ -2,15 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* 
+Smriti Design System 
+Warm, Emotional, Compassionate — primary palette.
+All colors MUST be HSL-based.
 */
 
 @layer base {
   :root {
-    /* Smriti Color Palette - Warm, Emotional, Compassionate */
-    --background: 285 100% 98%;  /* #fdf6ff - light purple background */
-    --foreground: 20 45% 26%;     /* #5e3023 - warm brown text */
+    /* 💜 Smriti Default Theme (Warm Purple) */
+    --background: 285 100% 98%;
+    --foreground: 20 45% 26%;
 
     --card: 0 0% 100%;
     --card-foreground: 20 45% 26%;
@@ -18,16 +20,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 20 45% 26%;
 
-    --primary: 286 100% 50%;      /* #c800ff - vivid purple for main CTAs */
+    --primary: 286 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 285 100% 70%;    /* #de67ff - light lavender accents */
+    --secondary: 285 100% 70%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 285 50% 95%;
     --muted-foreground: 20 25% 45%;
 
-    --accent: 285 100% 70%;       /* lavender for highlights */
+    --accent: 285 100% 70%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -37,18 +39,150 @@ All colors MUST be HSL.
     --input: 285 30% 90%;
     --ring: 286 100% 50%;
 
-    --radius: 1rem;  /* Rounded, flowing shapes */
+    --radius: 1rem;
 
-    /* Custom design tokens for Smriti */
-    --gradient-hero: linear-gradient(135deg, hsl(285, 100%, 98%) 0%, hsl(285, 80%, 96%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(286, 100%, 50%) 0%, hsl(285, 100%, 70%) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(285, 100%, 98%) 0%, hsl(0, 0%, 100%) 100%);
+    /* Gradients & Shadows */
+    --gradient-hero: linear-gradient(135deg, hsl(285 100% 98%) 0%, hsl(285 80% 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(286 100% 50%) 0%, hsl(285 100% 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(285 100% 98%) 0%, hsl(0 0% 100%) 100%);
     
     --shadow-soft: 0 8px 32px -8px hsl(286 100% 50% / 0.12);
     --shadow-card: 0 4px 24px -4px hsl(286 100% 50% / 0.08);
     --shadow-glow: 0 0 32px hsl(285 100% 70% / 0.3);
     
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 🌿 Calm Theme (Mint Green) */
+  .theme-calm {
+    --background: 146 64% 97%;
+    --foreground: 160 20% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 20% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 20% 20%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 156 40% 94%;
+    --muted-foreground: 160 20% 35%;
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
+    --border: 160 25% 85%;
+    --input: 160 25% 85%;
+    --ring: 160 84% 39%;
+    --gradient-hero: linear-gradient(135deg, hsl(146 64% 97%) 0%, hsl(160 50% 94%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(160 84% 39%) 0%, hsl(156 60% 55%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(146 64% 97%) 0%, hsl(0 0% 100%) 100%);
+    --shadow-soft: 0 8px 32px -8px hsl(160 84% 39% / 0.12);
+    --shadow-card: 0 4px 24px -4px hsl(160 84% 39% / 0.08);
+    --shadow-glow: 0 0 32px hsl(160 84% 39% / 0.25);
+  }
+
+  /* 💧 Serene Theme (Light Blue) */
+  .theme-serene {
+    --background: 204 100% 97%;   /* soft sky blue */
+    --foreground: 215 25% 20%;    /* deep navy */
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 20%;
+
+    --primary: 210 100% 50%;      /* bright blue */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 204 100% 70%;    /* sky tint */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 204 50% 94%;
+    --muted-foreground: 215 20% 35%;
+
+    --accent: 210 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --border: 204 40% 85%;
+    --input: 204 40% 85%;
+    --ring: 210 100% 50%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(204 100% 97%) 0%, hsl(210 100% 95%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%) 0%, hsl(204 100% 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(204 100% 97%) 0%, hsl(0 0% 100%) 100%);
+    --shadow-soft: 0 8px 32px -8px hsl(210 100% 50% / 0.12);
+    --shadow-card: 0 4px 24px -4px hsl(210 100% 50% / 0.08);
+    --shadow-glow: 0 0 32px hsl(210 100% 60% / 0.3);
+  }
+
+  /* 🌞 Radiant Theme (Yellow) */
+  .theme-radiant {
+    --background: 50 100% 97%;   /* pale yellow */
+    --foreground: 45 30% 20%;    /* warm brown */
+
+    --card: 0 0% 100%;
+    --card-foreground: 45 30% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 45 30% 20%;
+
+    --primary: 48 100% 50%;      /* sunflower yellow */
+    --primary-foreground: 45 100% 10%;
+
+    --secondary: 50 100% 70%;    /* soft lemon */
+    --secondary-foreground: 45 100% 10%;
+
+    --muted: 50 70% 94%;
+    --muted-foreground: 45 30% 35%;
+
+    --accent: 48 100% 60%;
+    --accent-foreground: 45 100% 10%;
+
+    --border: 48 40% 85%;
+    --input: 48 40% 85%;
+    --ring: 48 100% 50%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(50 100% 97%) 0%, hsl(48 100% 95%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(48 100% 50%) 0%, hsl(50 100% 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(50 100% 97%) 0%, hsl(0 0% 100%) 100%);
+    --shadow-soft: 0 8px 32px -8px hsl(48 100% 50% / 0.15);
+    --shadow-card: 0 4px 24px -4px hsl(48 100% 50% / 0.1);
+    --shadow-glow: 0 0 32px hsl(48 100% 60% / 0.35);
+  }
+
+  /* 🍊 Comforting Theme (Orange) */
+  .theme-comfort {
+    --background: 30 100% 97%;   /* light peach */
+    --foreground: 25 40% 20%;    /* deep amber text */
+
+    --card: 0 0% 100%;
+    --card-foreground: 25 40% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 40% 20%;
+
+    --primary: 28 100% 55%;      /* vibrant orange */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 100% 70%;    /* warm peach accent */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 30 70% 94%;
+    --muted-foreground: 25 30% 35%;
+
+    --accent: 28 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --border: 30 50% 85%;
+    --input: 30 50% 85%;
+    --ring: 28 100% 55%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(30 100% 97%) 0%, hsl(28 100% 95%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(28 100% 55%) 0%, hsl(30 100% 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(30 100% 97%) 0%, hsl(0 0% 100%) 100%);
+    --shadow-soft: 0 8px 32px -8px hsl(28 100% 55% / 0.15);
+    --shadow-card: 0 4px 24px -4px hsl(28 100% 55% / 0.1);
+    --shadow-glow: 0 0 32px hsl(28 100% 60% / 0.3);
   }
 }
 
@@ -58,11 +192,11 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-500;
   }
 }
 
-/* Smooth scrolling for anchor links (navbar) */
+/* Smooth scrolling for anchor links */
 html {
   scroll-behavior: smooth;
 }

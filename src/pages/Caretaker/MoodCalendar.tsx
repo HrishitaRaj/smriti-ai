@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const months = [
   "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "July", "August", "September", "October", "November", "December",
 ];
 
 const generateYearData = () => {
@@ -24,7 +24,10 @@ const generateYearData = () => {
         month,
         day,
         mood,
-        reason: reasons[mood as keyof typeof reasons][Math.floor(Math.random() * reasons[mood as keyof typeof reasons].length)],
+        reason:
+          reasons[mood as keyof typeof reasons][
+            Math.floor(Math.random() * reasons[mood as keyof typeof reasons].length)
+          ],
       });
     }
   }
@@ -39,10 +42,10 @@ const moodEmojis = {
 };
 
 const moodColors = {
-  calm: "bg-green-500 hover:bg-green-600",
-  happy: "bg-blue-500 hover:bg-blue-600",
-  neutral: "bg-yellow-500 hover:bg-yellow-600",
-  anxious: "bg-red-500 hover:bg-red-600",
+  calm: "from-green-200/70 to-emerald-400/60 border-green-300/30 shadow-green-200/40",
+  happy: "from-blue-200/70 to-sky-400/60 border-blue-300/30 shadow-sky-200/40",
+  neutral: "from-yellow-200/70 to-amber-400/60 border-yellow-300/30 shadow-amber-200/40",
+  anxious: "from-red-200/70 to-rose-400/60 border-red-300/30 shadow-rose-200/40",
 };
 
 const moodLabels = {
@@ -52,152 +55,181 @@ const moodLabels = {
   anxious: "Anxious",
 };
 
+const moodMeanings = {
+  calm: "Peaceful and steady — a serene state of mind 🌿",
+  happy: "Joyful, grateful, and bright ✨",
+  neutral: "Emotionally balanced and steady ⚖️",
+  anxious: "Restless or uneasy moments — be kind to yourself 💭",
+};
+
 const MoodCalendar = () => {
-    const [currentMonth, setCurrentMonth] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(0);
+  const [hoveredDay, setHoveredDay] = useState<null | {
+    day: number;
+    mood: string;
+    reason: string;
+  }>(null);
+
   const yearData = useState(() => generateYearData())[0];
   const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const currentMonthData = yearData.filter((d) => d.month === currentMonth);
   const firstDayOfMonth = new Date(2025, currentMonth, 1).getDay();
 
-  const getWeeklyInsight = () => {
-    const weekData = yearData.filter((d) => d.month === currentMonth && d.day <= 7);
-    const happyDays = weekData.filter((d) => d.mood === "happy").length;
-    const anxiousDays = weekData.filter((d) => d.mood === "anxious").length;
-    return {
-      message: happyDays > anxiousDays 
-        ? `Positive week! ${happyDays} happy days detected.` 
-        : anxiousDays > 0 
-        ? `${anxiousDays} anxious days this week. Consider extra support.`
-        : "Stable emotional week.",
-      type: happyDays > anxiousDays ? "positive" : anxiousDays > 0 ? "warning" : "neutral",
-    };
-  };
-
-  const getMonthlyInsight = () => {
-    const monthData = currentMonthData;
-    const moodCounts = monthData.reduce((acc, day) => {
-      acc[day.mood] = (acc[day.mood] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const dominant = Object.keys(moodCounts).reduce((a, b) => 
-      moodCounts[a] > moodCounts[b] ? a : b
-    );
-    return {
-      dominant,
-      count: moodCounts[dominant],
-      total: monthData.length,
-      percentage: Math.round((moodCounts[dominant] / monthData.length) * 100),
-    };
-  };
-
-  const weeklyInsight = getWeeklyInsight();
-  const monthlyInsight = getMonthlyInsight();
-
-  const moodStats = currentMonthData.reduce((acc, day) => {
-    acc[day.mood] = (acc[day.mood] || 0) + 1;
+  // INSIGHTS
+  const dailyInsight = currentMonthData[Math.floor(Math.random() * currentMonthData.length)];
+  const weeklyMoodCount = currentMonthData.slice(0, 7).reduce((acc, d) => {
+    acc[d.mood] = (acc[d.mood] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+  const monthlyMoodCount = currentMonthData.reduce((acc, d) => {
+    acc[d.mood] = (acc[d.mood] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const dominantWeekMood = Object.keys(weeklyMoodCount).reduce((a, b) =>
+    weeklyMoodCount[a] > weeklyMoodCount[b] ? a : b
+  );
+  const dominantMonthMood = Object.keys(monthlyMoodCount).reduce((a, b) =>
+    monthlyMoodCount[a] > monthlyMoodCount[b] ? a : b
+  );
 
-  const handlePrevMonth = () => {
-    setCurrentMonth((prev) => (prev === 0 ? 11 : prev - 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth((prev) => (prev === 11 ? 0 : prev + 1));
-  };
+  const handlePrevMonth = () => setCurrentMonth((prev) => (prev === 0 ? 11 : prev - 1));
+  const handleNextMonth = () => setCurrentMonth((prev) => (prev === 11 ? 0 : prev + 1));
 
   return (
-    <div className="p-8 space-y-6 animate-fade-in">
+    <div className="p-8 space-y-8 bg-gradient-to-br from-background via-muted/20 to-accent/10 rounded-3xl backdrop-blur-2xl relative">
       <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Mood Calendar</h1>
-        <p className="text-muted-foreground">Yearly emotional overview</p>
-              </div>
+        <h1 className="text-3xl font-bold text-primary drop-shadow-md mb-3">✨ Mood Calendar</h1>
+        <p className="text-muted-foreground">
+          Track emotions beautifully — daily, weekly, and monthly insights.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={cn(
-          "bg-card rounded-2xl p-4 border-l-4",
-          weeklyInsight.type === "positive" ? "border-green-500" : 
-          weeklyInsight.type === "warning" ? "border-yellow-500" : "border-blue-500"
-        )}>
-          <h3 className="font-semibold text-foreground mb-2">📅 Weekly Insight</h3>
-          <p className="text-sm text-muted-foreground">{weeklyInsight.message}</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-4 border border-primary/20">
-          <h3 className="font-semibold text-foreground mb-2">📊 Monthly Insight</h3>
-          <p className="text-sm text-muted-foreground">
-            {moodEmojis[monthlyInsight.dominant as keyof typeof moodEmojis]} {monthlyInsight.dominant.charAt(0).toUpperCase() + monthlyInsight.dominant.slice(1)} mood dominated with {monthlyInsight.percentage}% of days
+      {/* INSIGHTS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Daily */}
+        <div className="bg-gradient-to-br from-pink-100/50 to-pink-200/30 border border-pink-300/40 rounded-2xl p-4 backdrop-blur-md shadow-md">
+          <h3 className="font-semibold text-pink-800 text-sm mb-1">🌤️ Daily Mood</h3>
+          <p className="text-sm text-pink-900/80">
+            {dailyInsight.mood === "happy"
+              ? `You felt happy today — ${dailyInsight.reason}`
+              : dailyInsight.mood === "calm"
+              ? `You stayed calm with ${dailyInsight.reason}`
+              : dailyInsight.mood === "neutral"
+              ? `A balanced day — ${dailyInsight.reason}`
+              : `You were a bit anxious due to ${dailyInsight.reason}`}
           </p>
         </div>
 
-        <div className="bg-card rounded-2xl p-4">
-          <h3 className="font-semibold text-foreground mb-2">🎯 Recommendation</h3>
-          <p className="text-sm text-muted-foreground">
-            {monthlyInsight.dominant === "happy" || monthlyInsight.dominant === "calm" 
-              ? "Keep up the excellent routine!"
-              : "Consider increasing family interactions."}
+        {/* Weekly */}
+        <div className="bg-gradient-to-br from-sky-100/50 to-sky-200/30 border border-sky-300/40 rounded-2xl p-4 backdrop-blur-md shadow-md">
+          <h3 className="font-semibold text-sky-800 text-sm mb-1">📅 Weekly Insight</h3>
+          <p className="text-sm text-sky-900/80">
+            Dominant emotion: <b>{moodLabels[dominantWeekMood as keyof typeof moodLabels]}</b> —{" "}
+            {weeklyMoodCount[dominantWeekMood]} days.
           </p>
         </div>
-        </div>
 
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+        {/* Monthly */}
+        <div className="bg-gradient-to-br from-emerald-100/50 to-emerald-200/30 border border-emerald-300/40 rounded-2xl p-4 backdrop-blur-md shadow-md">
+          <h3 className="font-semibold text-emerald-800 text-sm mb-1">📊 Monthly Reflection</h3>
+          <p className="text-sm text-emerald-900/80">
+            You were mostly <b>{moodLabels[dominantMonthMood as keyof typeof moodLabels]}</b> this
+            month — keep your glow 💫
+          </p>
+        </div>
+      </div>
+
+      {/* MONTH HEADER */}
+      <div className="bg-card/40 backdrop-blur-lg border border-border/40 rounded-2xl p-6 shadow-md relative">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-foreground">{months[currentMonth]} 2025</h2>
+          <h2 className="text-xl font-semibold text-foreground drop-shadow">
+            {months[currentMonth]} 2025
+          </h2>
           <div className="flex gap-2">
-           <button onClick={handlePrevMonth} className="p-2 rounded-lg hover:bg-muted transition-colors"> 
+            <button
+              onClick={handlePrevMonth}
+              className="p-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-all shadow-sm"
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button onClick={handleNextMonth} className="p-2 rounded-lg hover:bg-muted transition-colors">
-            <ChevronRight className="w-5 h-5" />
+            <button
+              onClick={handleNextMonth}
+              className="p-2 rounded-lg bg-muted/40 hover:bg-muted/60 transition-all shadow-sm"
+            >
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
 
+        {/* WEEK LABELS */}
         <div className="grid grid-cols-7 gap-2 mb-2">
           {weekDays.map((day) => (
-            <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
+            <div
+              key={day}
+              className="text-center text-sm font-medium text-muted-foreground py-2 uppercase tracking-wide"
+            >
               {day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
-                    {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-            <div key={`empty-${i}`} />
+        {/* DAYS GRID */}
+        <div className="grid grid-cols-7 gap-5 justify-items-center relative">
+          {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+            <div key={`empty-${i}`} className="w-10 h-10" />
           ))}
+
           {currentMonthData.map((dayData) => (
-          
-            <button
+            <div
               key={dayData.day}
+              onMouseEnter={() => setHoveredDay(dayData)}
+              onMouseLeave={() => setHoveredDay(null)}
               className={cn(
-                "aspect-square rounded-xl flex flex-col items-center justify-center transition-all group relative",
+                "relative w-16 h-16 rounded-full flex items-center justify-center text-4xl cursor-pointer bg-gradient-to-br transition-all duration-200 border shadow-md hover:scale-105",
                 moodColors[dayData.mood as keyof typeof moodColors]
               )}
             >
-              <span className="text-lg">{moodEmojis[dayData.mood as keyof typeof moodEmojis]}</span>
-              <span className="text-white text-xs font-semibold">{dayData.day}</span>
-              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-3 py-2 rounded-lg whitespace-nowrap z-10 shadow-lg">
-                <div className="font-semibold">{moodLabels[dayData.mood as keyof typeof moodLabels]}</div>
-                <div className="text-gray-300 mt-1">{dayData.reason}</div>
-              </div>
-            </button>
+              {moodEmojis[dayData.mood as keyof typeof moodEmojis]}
+
+              {/* FIXED TOOLTIP - positioned above with gap */}
+              {hoveredDay?.day === dayData.day && (
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-white/95 border border-gray-300 text-gray-800 text-sm px-3 py-2 rounded-lg shadow-lg z-50 w-max max-w-[150px] text-center transition-all duration-200">
+                  <strong>
+                    {months[currentMonth]} {hoveredDay.day}, 2025
+                  </strong>
+                  <div>
+                    {moodLabels[hoveredDay.mood as keyof typeof moodLabels]} — {hoveredDay.reason}
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Object.entries(moodStats).map(([mood, count]) => {
-  const moodKey = mood as keyof typeof moodEmojis;
-  return (
-    <div key={mood} className="bg-card rounded-2xl p-6 shadow-sm border border-border">
-      <div className="text-3xl mb-2">{moodEmojis[moodKey]}</div>
-      <p className="text-2xl font-bold text-foreground">{String(count)} days</p>
-      <p className="text-sm text-muted-foreground capitalize">{mood}</p>
-    </div>
-  );
-})}
-
+      {/* MOOD MEANINGS */}
+      <div className="mt-6 bg-card/40 backdrop-blur-lg border border-border/30 rounded-2xl p-6 shadow-inner">
+        <h3 className="text-lg font-semibold text-foreground mb-4">💭 Mood Meanings</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Object.entries(moodMeanings).map(([mood, meaning]) => (
+            <div
+              key={mood}
+              className={cn(
+                "p-4 rounded-xl border bg-gradient-to-br text-sm shadow-sm hover:shadow-md transition-all",
+                moodColors[mood as keyof typeof moodColors]
+              )}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">{moodEmojis[mood as keyof typeof moodEmojis]}</span>
+                <span className="font-semibold text-foreground capitalize">
+                  {moodLabels[mood as keyof typeof moodLabels]}
+                </span>
+              </div>
+              <p className="text-foreground/80">{meaning}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

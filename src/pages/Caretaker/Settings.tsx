@@ -1,16 +1,57 @@
-import { useState } from "react"
-import { Bell, Lock, Users as UsersIcon, Palette } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { useState, useEffect } from "react"
+import { Bell, Lock, Users as UsersIcon, Palette } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
 
+const themes = [
+  { id: "default", label: "Default (Warm Purple) ✨" },
+  { id: "calm", label: "Calm (Mint Green) 🌿" },
+  { id: "serene", label: "Serene (Light Blue) 💧" },
+  { id: "radiant", label: "Radiant (Yellow) 🌞" },
+  { id: "comfort", label: "Comforting (Orange) 🍊" },
+]
 
 const Settings = () => {
-  const [aiTone, setAiTone] = useState<"friendly" | "formal" | "family">("friendly");
+  const [selectedTheme, setSelectedTheme] = useState("default")
 
-  const handleToneChange = (tone: "friendly" | "formal" | "family") => {
-    setAiTone(tone);
-    toast.success(`AI tone changed to ${tone === "friendly" ? "Friendly & Warm" : tone === "formal" ? "Formal & Professional" : "Family-like & Caring"}`);
-  };
+  useEffect(() => {
+    const saved = localStorage.getItem("theme-mode")
+    if (saved) {
+      setSelectedTheme(saved)
+      applyTheme(saved)
+    }
+  }, [])
+
+  const applyTheme = (theme: string) => {
+    const root = document.documentElement
+    root.classList.remove(
+      "theme-calm",
+      "theme-serene",
+      "theme-radiant",
+      "theme-comfort"
+    )
+
+    if (theme !== "default") root.classList.add(`theme-${theme}`)
+    localStorage.setItem("theme-mode", theme)
+
+    const emoji =
+      theme === "calm"
+        ? "🌿"
+        : theme === "serene"
+        ? "💧"
+        : theme === "radiant"
+        ? "🌞"
+        : theme === "comfort"
+        ? "🍊"
+        : "✨"
+
+    toast.success(`Switched to ${themes.find((t) => t.id === theme)?.label} ${emoji}`)
+  }
+
+  const handleThemeChange = (theme: string) => {
+    setSelectedTheme(theme)
+    applyTheme(theme)
+  }
 
   return (
     <div className="p-8 space-y-6 animate-fade-in">
@@ -20,6 +61,7 @@ const Settings = () => {
       </div>
 
       <div className="space-y-4">
+        {/* --- Notifications --- */}
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-blue-50">
@@ -46,6 +88,7 @@ const Settings = () => {
           </div>
         </div>
 
+        {/* --- Privacy & Security --- */}
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-purple-50">
@@ -72,6 +115,7 @@ const Settings = () => {
           </div>
         </div>
 
+        {/* --- Caregiver Access --- */}
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-green-50">
@@ -94,56 +138,40 @@ const Settings = () => {
           </div>
         </div>
 
+        {/* --- Theme Mode --- */}
         <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-xl bg-pink-50">
               <Palette className="w-6 h-6 text-pink-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-1">AI Personalization</h3>
-              <p className="text-sm text-muted-foreground mb-4">Customize AI interaction style</p>
-              <div className="space-y-3">
-                <button 
-                  onClick={() => handleToneChange("friendly")}
-                  className={`w-full text-left p-3 rounded-xl transition-colors ${
-                    aiTone === "friendly" 
-                      ? "bg-primary/10 border-2 border-primary" 
-                      : "bg-muted hover:bg-muted/80 border-2 border-transparent"
-                  }`}
-                >
-                  <p className="font-medium text-foreground">Friendly & Warm</p>
-                  {aiTone === "friendly" && <p className="text-xs text-muted-foreground">Current setting</p>}
-               </button>
-                <button 
-                  onClick={() => handleToneChange("formal")}
-                  className={`w-full text-left p-3 rounded-xl transition-colors ${
-                    aiTone === "formal" 
-                      ? "bg-primary/10 border-2 border-primary" 
-                      : "bg-muted hover:bg-muted/80 border-2 border-transparent"
-                  }`}
-                >
-                 <p className="font-medium text-foreground">Formal & Professional</p>
-                {aiTone === "formal" && <p className="text-xs text-muted-foreground">Current setting</p>}
-                </button>
-                <button 
-                  onClick={() => handleToneChange("family")}
-                  className={`w-full text-left p-3 rounded-xl transition-colors ${
-                    aiTone === "family" 
-                      ? "bg-primary/10 border-2 border-primary" 
-                      : "bg-muted hover:bg-muted/80 border-2 border-transparent"
-                  }`}
-                >
-                  <p className="font-medium text-foreground">Family-like & Caring</p>
-                  {aiTone === "family" && <p className="text-xs text-muted-foreground">Current setting</p>}
-                
-                </button>
+              <h3 className="font-semibold text-foreground mb-1">Color Theme</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Choose from available Smriti color palettes
+              </p>
+              <div className="space-y-2">
+                {themes.map((theme) => (
+                  <label
+                    key={theme.id}
+                    className={`flex items-center justify-between cursor-pointer p-3 rounded-xl transition-colors ${
+                      selectedTheme === theme.id ? "bg-muted" : "hover:bg-muted"
+                    }`}
+                  >
+                    <span className="text-sm text-foreground">{theme.label}</span>
+                    <Switch
+                      checked={selectedTheme === theme.id}
+                      onCheckedChange={() => handleThemeChange(theme.id)}
+                    />
+                  </label>
+                ))}
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Settings;
+export default Settings
