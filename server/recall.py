@@ -6,7 +6,7 @@ from sentence_transformers import SentenceTransformer
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 

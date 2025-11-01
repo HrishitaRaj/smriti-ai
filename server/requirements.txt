@@ -4,3 +4,4 @@ openai
 faiss-cpu
 fastapi
 uvicorn
+google-cloud-speech

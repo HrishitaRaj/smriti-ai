@@ -6,6 +6,8 @@ const Chat = () => {
   const chatbotRef = useRef<ChatbotHandle | null>(null);
   const [input, setInput] = useState("");
   const [pendingMemory, setPendingMemory] = useState<string | null>(null);
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [serverActive, setServerActive] = useState(false);
 
   const onSend = async () => {
     if (!input.trim()) return;
@@ -46,7 +48,16 @@ const Chat = () => {
 
           {/* Chat area (flex grows) */}
           <div className="flex-1 overflow-y-auto mb-4">
-            <Chatbot ref={chatbotRef} hideInput />
+            <Chatbot
+              ref={chatbotRef}
+              hideInput
+              onTranscript={(t) => setInput(t)}
+              onStateChange={(s) => {
+                // event-driven updates from Chatbot; keeps UI in sync without polling
+                setVoiceActive(!!s.recognizing);
+                setServerActive(!!s.serverRecording || !!s.transcribing);
+              }}
+            />
           </div>
 
           {/* Input area */}
@@ -84,6 +95,40 @@ const Chat = () => {
               <button onClick={onSave} className="ml-2 px-4 py-2 rounded-full bg-white shadow text-sm font-medium text-foreground/90 hover:bg-gray-50 transition">
                 Save
               </button>
+              {/* Voice controls for pages that hide Chatbot's own input */}
+              <div className="flex items-center gap-2 ml-2">
+                <button
+                  title={voiceActive ? "Stop recording" : "Start in-browser speech recognition"}
+                  onClick={() => {
+                      if (!chatbotRef.current) return;
+                      // Toggle: if recognizing -> stop, else start
+                      if (chatbotRef.current.isRecognizing && chatbotRef.current.isRecognizing()) {
+                        chatbotRef.current.stopRecognition?.();
+                        return;
+                      }
+                      chatbotRef.current.startRecognition?.();
+                    }}
+                  className={`w-10 h-10 rounded-full ${voiceActive ? "bg-red-500 text-white" : "bg-gray-100"} flex items-center justify-center`}
+                    disabled={serverActive}
+                >
+                  🎙
+                </button>
+                <button
+                  title={serverActive ? "Stop server recording" : "Record audio and transcribe with Google STT"}
+                  onClick={() => {
+                      if (!chatbotRef.current) return;
+                      if (chatbotRef.current.isServerRecording && chatbotRef.current.isServerRecording()) {
+                        chatbotRef.current.stopServerRecording?.();
+                        return;
+                      }
+                      chatbotRef.current.startServerRecording?.();
+                    }}
+                  className={`w-10 h-10 rounded-full bg-gradient-to-r from-[#de67ff] to-[#c800ff] text-white flex items-center justify-center ${serverActive ? "opacity-80" : ""}`}
+                  disabled={voiceActive}
+                >
+                  GTT
+                </button>
+              </div>
             </div>
           </div>
         </div>

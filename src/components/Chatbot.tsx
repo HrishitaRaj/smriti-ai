@@ -6,13 +6,58 @@ type Message = { role: "user" | "assistant" | "system"; text: string; emotion?: 
 export type ChatbotHandle = {
   sendQuestion: (question: string) => Promise<void>;
   addMemory: (text: string, emotion?: string) => Promise<void>;
+  // expose speech helpers so pages that hide the built-in input can still use voice features
+  startRecognition?: () => void;
+  stopRecognition?: () => void;
+  startServerRecording?: () => void;
+  stopServerRecording?: () => void;
+  // state query helpers (optional)
+  isRecognizing?: () => boolean;
+  isServerRecording?: () => boolean;
+  isTranscribing?: () => boolean;
 };
 
-const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chatbot(props, ref) {
+const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean; onTranscript?: (t: string) => void; onStateChange?: (s: { recognizing: boolean; serverRecording: boolean; transcribing: boolean }) => void }>(function Chatbot(props, ref) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [recognizing, setRecognizing] = useState(false);
+  // keep a snapshot of the input at recognition start so interim results
+  // replace the transient part instead of repeatedly appending and causing
+  // repeated fragments like "my my name is"
+  const inputBeforeRecognitionRef = useRef<string>("");
+  const recognitionRef = useRef<any | null>(null);
+  const [serverRecording, setServerRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const serverChunksRef = useRef<Blob[]>([]);
+  const [transcribing, setTranscribing] = useState(false);
+  const [sttLang, setSttLang] = useState<"auto" | "en" | "hi" | "ta">("auto");
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // Initialize SpeechRecognition if available
+  useEffect(() => {
+    const win = window as any;
+    const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition || null;
+    if (!SpeechRecognition) return;
+    try {
+      const rec = new SpeechRecognition();
+      rec.continuous = false; // single-shot by default
+      rec.interimResults = true;
+      rec.lang = "en-US";
+      recognitionRef.current = rec;
+    } catch (e) {
+      recognitionRef.current = null;
+    }
+    return () => {
+      try {
+        recognitionRef.current?.stop();
+      } catch (e) {
+        /* ignore */
+      }
+      recognitionRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -170,6 +215,9 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chat
 
         const body: Record<string, any> = { text };
         if (emotion) body.emotion = emotion;
+        // stop any ongoing recognition before sending
+        try { recognitionRef.current?.stop(); } catch (e) { /* ignore */ }
+
         await fetch("http://localhost:8000/add-memory", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -189,6 +237,183 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chat
       }
     },
   }));
+
+  // Expose voice helper methods on the forwarded ref so parent pages (that hide
+  // the built-in input) can start/stop recognition or server recording.
+  useEffect(() => {
+    try {
+      const r = ref as React.RefObject<any>;
+      if (r && r.current) {
+        r.current.startRecognition = startRecognition;
+        r.current.stopRecognition = stopRecognition;
+        r.current.startServerRecording = startServerRecording;
+        r.current.stopServerRecording = stopServerRecording;
+        // expose simple state queries so parent pages can disable buttons
+        r.current.isRecognizing = () => recognizing;
+        r.current.isServerRecording = () => serverRecording;
+        r.current.isTranscribing = () => transcribing;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [ref, recognizing, serverRecording, sttLang, transcribing]);
+
+  // notify parent pages of state changes (event-driven instead of polling)
+  useEffect(() => {
+    try {
+      // notify parent asynchronously to avoid accidental sync setState during
+      // render of this component
+      queueMicrotask(() => {
+        try { props.onStateChange?.({ recognizing, serverRecording, transcribing }); } catch (e) { /* ignore */ }
+      });
+    } catch (e) {
+      setTimeout(() => { try { props.onStateChange?.({ recognizing, serverRecording, transcribing }); } catch (e) {} }, 0);
+    }
+  }, [recognizing, serverRecording, transcribing, props]);
+
+  // Start/stop recognition handlers for the mic button
+  const startRecognition = () => {
+    const rec = recognitionRef.current;
+    if (!rec) {
+      setMessages((m) => [...m, { role: "assistant", text: "Speech recognition not supported in this browser." }]);
+      return;
+    }
+
+    // guard: don't start if already recognizing
+    if (recognizing) {
+      console.warn("Speech recognition already running");
+      return;
+    }
+
+    rec.onstart = () => setRecognizing(true);
+    rec.onend = () => setRecognizing(false);
+    rec.onerror = (e: any) => {
+      console.error("Speech recognition error", e);
+      setRecognizing(false);
+    };
+
+    // snapshot base input so interim results can replace the transient part
+    inputBeforeRecognitionRef.current = input;
+
+    let interimTranscript = "";
+
+    rec.onresult = (ev: any) => {
+      let finalTranscript = "";
+      for (let i = ev.resultIndex; i < ev.results.length; ++i) {
+        const res = ev.results[i];
+        if (res.isFinal) finalTranscript += res[0].transcript;
+        else interimTranscript += res[0].transcript;
+      }
+
+      // use the snapshot as the immutable base to avoid duplicating previously
+      // applied interim fragments that are already present in `input` state.
+      const base = (inputBeforeRecognitionRef.current || "").replace(/\s+$/, "");
+      const combined = (base ? base + " " : "") + (finalTranscript ? finalTranscript : "") + (interimTranscript ? ` ${interimTranscript}` : "");
+
+      // update local input state first
+      setInput(combined);
+      // notify parent asynchronously so we don't trigger parent setState while
+      // this component is rendering (avoids React "setState in render" warnings)
+      try {
+        queueMicrotask(() => {
+          try { props.onTranscript?.(combined); } catch (e) { /* ignore */ }
+        });
+      } catch (e) {
+        // fallback
+        setTimeout(() => { try { props.onTranscript?.(combined); } catch (e) {} }, 0);
+      }
+
+      // If we received a final transcript, update the snapshot so subsequent
+      // results append to the confirmed text rather than starting from the
+      // original pre-recognition input.
+      if (finalTranscript) {
+        inputBeforeRecognitionRef.current = combined;
+      }
+
+      // clear interim buffer for the next onresult
+      interimTranscript = "";
+    };
+
+    try {
+      rec.start();
+    } catch (e) {
+      // some browsers throw if started twice
+      console.warn(e);
+      // don't force recognizing=true here; let onstart/onerror/onend update state
+      setRecognizing(false);
+    }
+  };
+
+  const stopRecognition = () => {
+    try {
+      recognitionRef.current?.stop();
+    } catch (e) {
+      // ignore
+    }
+    setRecognizing(false);
+  };
+
+  // Server-side recording (MediaRecorder) -> upload to /transcribe (Google STT)
+  const startServerRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      serverChunksRef.current = [];
+      const options: any = { mimeType: "audio/webm" };
+      const mr = new MediaRecorder(stream, options);
+      mr.ondataavailable = (e: BlobEvent) => {
+        if (e.data && e.data.size > 0) serverChunksRef.current.push(e.data);
+      };
+      mr.onstop = async () => {
+        setServerRecording(false);
+        const blob = new Blob(serverChunksRef.current, { type: "audio/webm" });
+        // upload to server
+        setTranscribing(true);
+        try {
+          const fd = new FormData();
+          fd.append("file", blob, "speech.webm");
+          fd.append("lang", sttLang);
+          const res = await fetch("http://localhost:8000/transcribe", { method: "POST", body: fd });
+          const data = await res.json();
+          if (data && data.transcript) {
+            // append transcript to input and notify parent
+            setInput((prev) => {
+              const combined = prev ? prev + " " + data.transcript : data.transcript;
+              try {
+                queueMicrotask(() => { try { props.onTranscript?.(combined); } catch (e) { /* ignore */ } });
+              } catch (e) {
+                setTimeout(() => { try { props.onTranscript?.(combined); } catch (e) {} }, 0);
+              }
+              return combined;
+            });
+            setMessages((m) => [...m, { role: "system", text: `Transcribed: ${data.transcript}` }]);
+          } else if (data && data.error) {
+            setMessages((m) => [...m, { role: "assistant", text: `STT error: ${data.error}` }]);
+          }
+        } catch (e) {
+          setMessages((m) => [...m, { role: "assistant", text: `Transcription failed: ${e}` }]);
+        } finally {
+          setTranscribing(false);
+          try {
+            mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+          } catch (e) {}
+          mediaStreamRef.current = null;
+        }
+      };
+      mr.start();
+      mediaRecorderRef.current = mr;
+      setServerRecording(true);
+    } catch (e) {
+      setMessages((m) => [...m, { role: "assistant", text: `Could not access microphone: ${e}` }]);
+    }
+  };
+
+  const stopServerRecording = () => {
+    try {
+      mediaRecorderRef.current?.stop();
+    } catch (e) {}
+    setServerRecording(false);
+  };
 
   const hideInput = props.hideInput;
 
@@ -230,6 +455,28 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean }>(function Chat
           <button className="btn" onClick={() => { (ref as React.RefObject<ChatbotHandle>).current?.addMemory(input); setInput(""); }}>
             Save
           </button>
+          <button
+            title={recognizing ? "Stop recording" : "Record voice"}
+            onClick={() => (recognizing ? stopRecognition() : startRecognition())}
+            className={`btn ${recognizing ? "bg-red-500 text-white" : ""}`}
+          >
+            {recognizing ? "Stop" : "🎤"}
+          </button>
+          <div className="flex items-center gap-2">
+            <select value={sttLang} onChange={(e) => setSttLang(e.target.value as any)} className="border rounded px-2 py-1">
+              <option value="auto">Auto (en/hi/ta)</option>
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="ta">Tamil</option>
+            </select>
+            <button
+              title={serverRecording ? "Stop server recording" : "Record and transcribe (Google)"}
+              onClick={() => (serverRecording ? stopServerRecording() : startServerRecording())}
+              className={`btn ${serverRecording ? "bg-red-500 text-white" : ""}`}
+            >
+              {serverRecording ? (transcribing ? "Uploading..." : "Stop") : (transcribing ? "Transcribing..." : "GTT 🎤")}
+            </button>
+          </div>
         </div>
       )}
     </section>
