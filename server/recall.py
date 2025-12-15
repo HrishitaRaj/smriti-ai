@@ -2,11 +2,12 @@ import os
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import re
 
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = ""
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 
@@ -122,18 +123,22 @@ def ask_model(question, context):
     user reported feeling about it, and instruct the model to reply gently.
     """
     # Build a gentle, emotion-aware context for the model.
+    # Tag stored memories with a simple language hint (Hindi if Devanagari chars present).
     ctx_lines = []
     for m in context:
         if isinstance(m, dict):
             text = m.get("text", "")
             emotion = m.get("emotion")
+            lang = 'Hindi' if re.search(r'[\u0900-\u097F]', text) else 'English'
             if emotion:
-                ctx_lines.append(f"- Memory: {text} (feeling: {emotion})")
+                ctx_lines.append(f"- Memory ({lang}): {text} (feeling: {emotion})")
             else:
-                ctx_lines.append(f"- Memory: {text}")
+                ctx_lines.append(f"- Memory ({lang}): {text}")
         else:
             # Fallback if older format is passed
-            ctx_lines.append(f"- Memory: {str(m)}")
+            txt = str(m)
+            lang = 'Hindi' if re.search(r'[\u0900-\u097F]', txt) else 'English'
+            ctx_lines.append(f"- Memory ({lang}): {txt}")
 
     context_text = "\n".join(ctx_lines)
 
@@ -144,7 +149,10 @@ When you answer, do two things:
 
 Use warm, reassuring language and keep responses concise and respectful.
 
-Here are the stored memories and any reported emotions:
+Use the language of the user's question for your response. Always reference relevant stored memories even if those memories are written in a different language.
+If a stored memory is in a different language than the question, first provide a one-line translation of that memory into the question's language, then reference it when answering.
+
+Here are the stored memories and any reported emotions (each memory is language-tagged):
 {context_text}
 
 Question: {question}
@@ -165,7 +173,7 @@ Answer gently, referencing relevant memories and the associated feelings where a
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
-                {"role": "system", "content": "You are an empathetic, factual assistant helping recall personal memories."},
+                {"role": "system", "content": "You are an empathetic, factual assistant helping recall personal memories. Use the language of the user's question for your reply. If any stored memory is in a different language, translate that memory briefly into the question's language before referencing it."},
                 {"role": "user", "content": prompt},
             ],
             temperature=0.3,
