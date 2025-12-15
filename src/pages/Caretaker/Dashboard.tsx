@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { StatCard } from "@/components/Statcard";
-import { Heart, Smile, Activity, MapPin, Plus, Trash2, X } from "lucide-react";
+import { Heart, Smile, Activity, MapPin, Plus, Trash2, X, ArrowLeft } from "lucide-react";
 import { CTEmotionChart } from "@/components/CTEmotionChart";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "react-router-dom"; // ✅ for navigation
 
 // --- Emotion Mock Data ---
 const emotionColors = {
@@ -60,6 +61,8 @@ const emotionalActivities = {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate(); // ✅ navigation hook
+
   const [tasks, setTasks] = useState(mockTasks);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskType, setNewTaskType] =
@@ -68,7 +71,7 @@ const Dashboard = () => {
     useState<"day" | "week" | "month">("week");
 
   // ---- Location ----
-  const [location, setLocation] = useState("New Delhi, India");
+  const [location, setLocation] = useState("Potheri, Tamil Nadu, India");
   const [lat, setLat] = useState(28.6139);
   const [lon, setLon] = useState(77.2090);
   const [showFullMap, setShowFullMap] = useState(false);
@@ -121,13 +124,25 @@ const Dashboard = () => {
   return (
     <div className="p-8 space-y-6 animate-fade-in">
       {/* HEADER */}
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">
-          Welcome back, Ms. Aditi Kashyap
-        </h1>
-        <p className="text-muted-foreground mb-4">
-          Here's today's overview for your patient
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            Welcome back, Ms. Aditi Kashyap
+          </h1>
+          <p className="text-muted-foreground mb-2">
+            Here's today's overview for your patient
+          </p>
+        </div>
+
+        {/* ✅ Back to Home Button */}
+        <Button
+          variant="outline"
+          className="gap-2 hover:bg-primary hover:text-white transition-all"
+          onClick={() => navigate("/")}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </Button>
       </div>
 
       {/* Stat Cards */}

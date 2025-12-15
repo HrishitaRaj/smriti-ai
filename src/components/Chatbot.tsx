@@ -367,6 +367,14 @@ const Chatbot = forwardRef<ChatbotHandle, { hideInput?: boolean; onTranscript?: 
       mr.onstop = async () => {
         setServerRecording(false);
         const blob = new Blob(serverChunksRef.current, { type: "audio/webm" });
+        // quick debug aid: create a blob URL so you can play/download the recorded audio
+        try {
+          const blobUrl = URL.createObjectURL(blob);
+          console.log("Recorded audio available:", blobUrl);
+          setMessages((m) => [...m, { role: "system", text: `Recorded audio available: ${blobUrl}` }]);
+        } catch (e) {
+          console.warn("Could not create blob URL for recorded audio", e);
+        }
         // upload to server
         setTranscribing(true);
         try {
