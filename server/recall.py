@@ -7,7 +7,7 @@ import re
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = ""
+OPENROUTER_API_KEY = "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"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL_NAME = "mistralai/mistral-7b-instruct"
 
@@ -48,7 +48,30 @@ def add_memory(text, emotion=None, timestamp=None):
 
     # ensure timestamp exists
     if timestamp is None:
-        timestamp = datetime.utcnow().isoformat()
+        # Try to infer a relative date from the memory text (supports simple Hindi/English tokens)
+        # Examples: 'aaj'/'today' -> today, 'kal'/'yesterday' -> yesterday, 'parso' -> day before yesterday
+        try:
+            from datetime import datetime, timedelta
+
+            lowered = text.lower() if isinstance(text, str) else ''
+            days_offset = None
+            # Hindi/Devanagari checks and common transliterations
+            if re.search(r"\b(aaj|today|आज)\b", lowered):
+                days_offset = 0
+            elif re.search(r"\b(kal|कल|yesterday)\b", lowered):
+                days_offset = -1
+            elif re.search(r"\b(parso|parson|परसों|परसो|day before yesterday)\b", lowered):
+                days_offset = -2
+
+            if days_offset is not None:
+                target_date = (datetime.utcnow().date() + timedelta(days=days_offset))
+                # Preserve current time of day
+                now = datetime.utcnow()
+                timestamp = datetime.combine(target_date, now.time()).isoformat()
+            else:
+                timestamp = datetime.utcnow().isoformat()
+        except Exception:
+            timestamp = datetime.utcnow().isoformat()
 
     # Use a lock to avoid race-conditions where two near-simultaneous requests
     # check for existing text and both append, resulting in duplicates.
