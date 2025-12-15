@@ -24,3 +24,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets / credentials
+smriti-key.json
+*.json
+.env
