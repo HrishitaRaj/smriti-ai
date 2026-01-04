@@ -7,9 +7,22 @@ import re
 # ===========================
 # CONFIG
 # ===========================
-OPENROUTER_API_KEY = "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"
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-MODEL_NAME = "mistralai/mistral-7b-instruct"
+try:
+    from dotenv import load_dotenv
+    # Load .env from the server directory next to this file
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+except Exception:
+    # If python-dotenv isn't installed or load fails, fall back to environment variables
+    pass
+
+# Configuration values are read from environment variables so sensitive keys
+# aren't stored in source. Provide sensible defaults where appropriate.
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "mistralai/mistral-7b-instruct")
+
+if not OPENROUTER_API_KEY:
+    print("⚠️ Warning: OPENROUTER_API_KEY not set. Add it to server/.env or set the environment variable.")
 
 # Initialize clients and models (import OpenAI defensively)
 try:

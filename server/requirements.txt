@@ -1,3 +1,11 @@
+python-dotenv
+sentence-transformers
+numpy
+openai
+faiss-cpu
+fastapi
+uvicorn
+google-cloud-speech
 sentence-transformers
 numpy
 openai
