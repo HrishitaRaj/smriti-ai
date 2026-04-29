@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -8,10 +10,18 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { useNavigate } from "react-router-dom"; // 👈 import for navigation
+import LoginModal from "@/components/LoginModal";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 
 export const Navigation = () => {
   const navigate = useNavigate(); // 👈 initialize navigation
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return () => unsub();
+  }, []);
 
   return (
   <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-md border-b border-transparent">
@@ -152,9 +162,27 @@ export const Navigation = () => {
             </NavigationMenu>
 
             <div className="flex items-center gap-4">
-              <Button className="bg-gradient-primary text-white shadow-glow hover:shadow-soft transition-all duration-300">
-                Sign Up
-              </Button>
+              {user ? (
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2"
+                  onClick={async () => {
+                    await signOut(auth);
+                    navigate("/");
+                  }}
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              ) : (
+                <LoginModal
+                  initialMode="signup"
+                  trigger={
+                    <Button className="bg-gradient-primary text-white shadow-glow hover:shadow-soft transition-all duration-300">
+                      Sign Up
+                    </Button>
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
